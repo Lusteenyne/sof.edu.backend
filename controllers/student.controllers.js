@@ -109,51 +109,48 @@ const registerStudent = async (req, res) => {
 
 // Login Student
 const loginStudent = async (req, res) => {
-  console.log("==[LOGIN REQUEST RECEIVED]==");
-  console.log("Request body:", req.body);
-
+  console.log('Login request received:', req.body);
   const { studentId, password } = req.body;
 
   try {
-    console.log(`Looking up student by ID: ${studentId}`);
     const student = await Student.findOne({ studentId });
+    console.log(`Looking up student by ID: ${studentId}`);
 
     if (!student) {
-      console.warn("Invalid student ID");
-      return res.status(401).json({ message: "Invalid credentials" });
+      console.warn('Invalid student ID');
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
-
-    console.log("Student found:", student.studentId);
 
     const isMatch = await bcrypt.compare(password, student.password);
     if (!isMatch) {
-      console.warn("Incorrect password for:", student.studentId);
-      return res.status(401).json({ message: "Invalid credentials" });
+      console.warn('Incorrect password');
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
       { id: student._id },
-      process.env.SECRETKEY || "defaultSecret",
-      { expiresIn: "7h" }
+      process.env.SECRETKEY || 'defaultSecret',
+      { expiresIn: '7h' }
     );
 
     console.log(`Login successful for student ID: ${studentId}`);
 
-    return res.status(200).json({
-      message: "Login successful",
+    res.status(200).json({
+      message: 'Login successful',
       token,
       student: {
         id: student._id,
         studentId: student.studentId,
         firstname: student.firstname,
-        email: student.email,
-      },
+        email: student.email
+      }
     });
   } catch (err) {
-    console.error("Login error:", err);
-    return res.status(500).json({ message: "Server error" });
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
+
 // Get Student Profile
 const getStudentProfile = async (req, res) => {
   console.log(`Fetching profile for student ID: ${req.user.id}`);
