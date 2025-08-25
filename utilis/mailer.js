@@ -32,7 +32,7 @@ const wrapHtml = (bodyContent) => `
     <head><style>${baseStyles}</style></head>
     <body>
       <div class="container">
-        <img class="logo" src="https://yourdomain.com/assets/logo.png" alt="SOF College of Engineering" />
+        <img class="logo" src="https://sof-edu.onrender.com/assets/mail2.jpg" alt="SOF College of Engineering" />
         ${bodyContent}
       </div>
       <div class="footer">
@@ -76,7 +76,7 @@ const sendMail = (email, firstname, studentId) => {
      <p>It's a great pleasure to have you on board.</p>
      <p><strong>Your Student ID:</strong> <span class="highlight">${studentId}</span></p>
      <p>Please keep it safe — you'll need it for logging in and accessing resources.</p>
-     <a href="https://your-portal-link.com" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">Visit Student Portal</a>
+     <a href="https://sof-edu.onrender.com/login-student" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">Visit Student Portal</a>
      <p style="margin-top: 30px;">Best regards,<br/><strong>SOF College of Engineering Team</strong></p>`
   );
 };
