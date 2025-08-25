@@ -89,7 +89,7 @@ const sendSuperAdminMail = (email, fullName) => {
     `<h2>Welcome, ${fullName}</h2>
      <p>You are now the Super Admin of SOF College of Engineering.</p>
      <p><strong>Full access</strong> to manage operations and infrastructure has been granted.</p>
-     <a href="https://admin.sofcollege.edu.ng/login" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">Access Admin Panel</a>
+     <a href="https://sof-edu.onrender.com/admin/login" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">Access Admin Panel</a>
      <p style="margin-top:30px;"><strong>Leadership begins with vision. Yours is now at the helm.</strong></p>`
   );
 };
@@ -125,7 +125,7 @@ const sendTeacherApprovalEmail = (email, title, fullName, teacherId) => {
     `<h2>Your Account Has Been Approved</h2>
      <p>Welcome, <strong>${title} ${fullName}</strong>!</p>
      <p>Your registration has been approved. Your Staff ID is <span class="highlight">${teacherId}</span>.</p>
-     <a href="https://portal.sofcollege.edu.ng/login" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#28a745; color:white; text-decoration:none; border-radius:5px;">Login to Portal</a>`
+     <a href="https://sof-edu.onrender.com/teacher/login" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#28a745; color:white; text-decoration:none; border-radius:5px;">Login to Portal</a>`
   );
 };
 
@@ -138,8 +138,9 @@ const sendCourseRegistrationMail = (fullName, semester, department, level) => {
      <p>Hello Admin,</p>
      <p><strong>${fullName}</strong>, a student of <strong>${department}</strong>, <strong>${level} level</strong>, has submitted their course registration for the <strong>${semester}</strong>.</p>
      <p><em>This submission is awaiting your approval.</em></p>
-     <a href="https://admin.sofcollege.edu.ng/courses/approvals" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
+     <a href="https://sof-edu.onrender.com/admin/login" style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
        Review Course Registration
+
      </a>`
   );
 };
@@ -161,7 +162,7 @@ const sendTuitionPaymentToAdmin = (fullName, amount, method, department, session
     `${fullName} made a payment of ₦${amount} via ${method}.`,
     `<h2>Tuition Payment Received</h2>
      <p><strong>${fullName}</strong>, a student of <strong>${department}</strong> (Session: <strong>${session}</strong>), paid <strong>₦${amount}</strong> via <strong>${method}</strong>. Please verify the transaction in the administration portal.</p>
-     <p><a href="https://your-admin-portal.com/payments">Verify in Admin Portal</a></p>`
+     <p><a href="https://sof-edu.onrender.com/admin/login">Verify in Admin Portal</a></p>`
   );
 };
 
@@ -210,7 +211,7 @@ const sendGeneralFeeUpdateMail = (emailList) => {
   const htmlContent = `
     <h2>Tuition/Fee Update Notification</h2>
     <p>The school's tuition or fee structure has been updated.</p>
-    <p>Please <a href="https://your-school-portal.com/login">log in</a> to review the latest information.</p>
+    <p>Please <a href="https://sof-edu.onrender.com/student/login">log in</a> to review the latest information.</p>
   `;
 
   return Promise.all(
@@ -228,7 +229,7 @@ const sendNewAssignmentEmail = (studentEmail, studentName, courseTitle, courseCo
      <p>A new assignment has been posted for your course <strong>${courseTitle} (${courseCode})</strong>.</p>
      <p><strong>Title:</strong> ${assignmentTitle}</p>
      <p><strong>Deadline:</strong> ${new Date(deadline).toLocaleString()}</p>
-     <a href="https://student.sofcollege.edu.ng/assignments" 
+     <a href="https://sof-edu.onrender.com/student/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         View Assignment
      </a>
@@ -246,7 +247,7 @@ const sendGradeNotificationEmail = (studentEmail, studentName, assignmentTitle, 
      <p>Hello <strong>${studentName}</strong>,</p>
      <p>Your submission for the assignment <strong>${assignmentTitle}</strong> has been graded.</p>
      <p><strong>Score:</strong> <span class="highlight">${score}/100</span></p>
-     <a href="https://student.sofcollege.edu.ng/grades" 
+     <a href="https://sof-edu.onrender.com/student/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#28a745; color:white; text-decoration:none; border-radius:5px;">
         View Grade
      </a>
@@ -263,7 +264,7 @@ const sendAssignmentSubmissionEmail = (teacherEmail, teacherName, studentName, a
     `<h2>New Assignment Submission</h2>
      <p>Hello <strong>${teacherName}</strong>,</p>
      <p><strong>${studentName}</strong> has submitted their work for the assignment <strong>${assignmentTitle}</strong>.</p>
-     <a href="https://teacher.sofcollege.edu.ng/assignments/submissions" 
+     <a href="https://sof-edu.onrender.com/teacher/login"
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         Review Submission
      </a>
@@ -286,7 +287,7 @@ const sendTeacherMessageNotificationToAdmin = (teacherFullName, messagePreview) 
      <blockquote style="background:#f4f4f4; padding:10px; border-left:4px solid #1a73e8; margin:20px 0;">
        ${messagePreview}
      </blockquote>
-     <a href="https://admin.sofcollege.edu.ng/messages" 
+     <a href="https://sof-edu.onrender.com/admin/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         Log In to View Message
      </a>`
@@ -304,7 +305,7 @@ const sendStudentMessageNotificationToAdmin = (studentFullName, messagePreview) 
      <blockquote style="background:#f4f4f4; padding:10px; border-left:4px solid #1a73e8; margin:20px 0;">
        ${messagePreview}
      </blockquote>
-     <a href="https://admin.sofcollege.edu.ng/messages" 
+     <a href="https://sof-edu.onrender.com/admin/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         Log In to View Message
      </a>`
@@ -322,7 +323,7 @@ const sendAdminMessageNotificationToTeacher = (teacherEmail, teacherFullName,  m
      <blockquote style="background:#f4f4f4; padding:10px; border-left:4px solid #1a73e8; margin:20px 0;">
        ${messagePreview}
      </blockquote>
-     <a href="https://teacher.sofcollege.edu.ng/messages" 
+     <a href="https://sof-edu.onrender.com/teacher/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         Log In to View Message
      </a>`
@@ -341,7 +342,7 @@ const sendStudentMessageNotificationToTeacher = (teacherEmail, studentFullName, 
      <blockquote style="background:#f4f4f4; padding:10px; border-left:4px solid #1a73e8; margin:20px 0;">
        ${messagePreview}
      </blockquote>
-     <a href="https://teacher.sofcollege.edu.ng/messages" 
+     <a href="https://sof-edu.onrender.com/teacher/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         Log In to View Message
      </a>`
@@ -360,7 +361,7 @@ const sendAdminMessageNotificationToStudent = (studentEmail, studentFullName, me
      <blockquote style="background:#f4f4f4; padding:10px; border-left:4px solid #1a73e8; margin:20px 0;">
        ${messagePreview}
      </blockquote>
-     <a href="https://student.sofcollege.edu.ng/messages" 
+     <a href=https://sof-edu.onrender.com/student/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         Log In to View Message
      </a>`
@@ -379,7 +380,7 @@ const sendTeacherMessageNotificationToStudent = (studentEmail, teacherFullName, 
      <blockquote style="background:#f4f4f4; padding:10px; border-left:4px solid #1a73e8; margin:20px 0;">
        ${messagePreview}
      </blockquote>
-     <a href="https://student.sofcollege.edu.ng/messages" 
+     <a href="https://sof-edu.onrender.com/student/login" 
         style="display:inline-block; margin-top:20px; padding:10px 20px; background:#1a73e8; color:white; text-decoration:none; border-radius:5px;">
         Log In to View Message
      </a>`

@@ -3,21 +3,21 @@ const app = express();
 const mongoose = require('mongoose');
 require('dotenv').config();
 const connect = require('./Db.config/db.connect');
-const chatmodel = require('./model/chat.model'); // Import the chat model
+const chatmodel = require('./model/chat.model'); 
 const socket = require('socket.io');
-const studentrouter = require('./routes/student.route'); // Import the student router
-const adminrouter = require('./routes/admin.route'); // Import the admin router
-const teacherrouter = require('./routes/teacher.route'); // Import the teacher router
+const studentrouter = require('./routes/student.route'); 
+const adminrouter = require('./routes/admin.route'); 
+const teacherrouter = require('./routes/teacher.route'); 
 
 const cors = require('cors');
-app.use(cors( { orgin: '*' })); // Middleware to enable CORS for all origins
-app.use(express.json({ limit: "50mb"})); // Middleware to parse JSON bodies
+app.use(cors( { orgin: 'https://sof-edu.onrender.com' }));
+app.use(express.json({ limit: "50mb"})); 
 
 
 //Routes
-app.use("/student", studentrouter); // Assuming you have a student router defined in routes/student.route.js
-app.use("/admin",adminrouter); // Assuming you have an admin router defined in routes/admin.route.js)
-app.use("/teacher", teacherrouter); // Assuming you have a teacher router defined in routes/teacher.route.js
+app.use("/student", studentrouter); 
+app.use("/admin",adminrouter); 
+app.use("/teacher", teacherrouter); 
 
 
 
@@ -25,7 +25,7 @@ app.use("/teacher", teacherrouter); // Assuming you have a teacher router define
 
 
 // Connect to database
-connect(); // This must happen BEFORE anything else
+connect();
 
 // Start the server
 const port = process.env.PORT || 5003;
@@ -38,7 +38,7 @@ mongoose.connection.once("open", () => {
     console.log("MongoDB connected. Setting up Socket.IO...");
 
     const io = socket(connection, {
-        cors: { origin: "*" }
+        cors: { origin: "https://sof-edu.onrender.com" }
     });
 
     io.on("connection", async (socket) => {
