@@ -1,27 +1,31 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 // Middleware to authenticate the token
 const authenticateToken = (req, res, next) => {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+  const token = req.header("Authorization")?.replace("Bearer ", "");
 
-    if (!token) {
-        return res.status(403).json({ message: "Token is required", status: false });
+  if (!token) {
+    return res.status(403).json({ message: "Token is required", status: false });
+  }
+
+  if (!process.env.SECRETKEY) {
+    console.error("SECRETKEY not set in environment variables");
+    return res.status(500).json({ message: "Server configuration error", status: false });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.SECRETKEY);
+    req.user = decoded;
+
+    console.log("Decoded JWT:", decoded);
+
+    next();
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(403).json({ message: "Token has expired", status: false });
     }
-
-    try {
-        const decoded = jwt.verify(token, process.env.SECRETKEY);
-        req.user = decoded; // Store the decoded token in the request for further use
-
-        // Debugging log to verify the token's decoded data
-        console.log("Decoded JWT:", decoded);
-
-        next();
-    } catch (err) {
-        if (err.name === "TokenExpiredError") {
-            return res.status(403).json({ message: "Token has expired", status: false });
-        }
-        return res.status(403).json({ message: "Invalid token", status: false });
-    }
+    return res.status(403).json({ message: "Invalid token", status: false });
+  }
 };
 
 module.exports = authenticateToken;
