@@ -10,7 +10,7 @@ const adminrouter = require('./routes/admin.route');
 const teacherrouter = require('./routes/teacher.route'); 
 
 const cors = require('cors');
-app.use(cors( { orgin: 'https://sof-edu.onrender.com' }));
+app.use(cors( { origin: 'https://sof-edu.onrender.com' }));
 app.use(express.json({ limit: "50mb"})); 
 
 
