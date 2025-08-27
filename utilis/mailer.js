@@ -32,7 +32,7 @@ const wrapHtml = (bodyContent) => `
     <head><style>${baseStyles}</style></head>
     <body>
       <div class="container">
-        <img class="logo" src="https://sof-edu.onrender.com/assets/mail2.jpg" alt="SOF College of Engineering" />
+        <img class="logo" src="https://sof-edu-backend.onrender.com/assets/mail2.jpg" alt="SOF College of Engineering" />
         ${bodyContent}
       </div>
       <div class="footer">
@@ -209,7 +209,7 @@ const sendGeneralFeeUpdateMail = (emailList) => {
   const subject = 'Tuition Update Notification';
   const plainText = `Dear Student,\n\nThe tuition structure has been updated. Please log in to your portal to review.`;
   const htmlContent = `
-    <h2>Tuition/Fee Update Notification</h2>
+    <h2>Tuition Update Notification</h2>
     <p>The school's tuition structure has been updated.</p>
     <p>Please <a href="https://sof-edu.onrender.com/login-student">log in</a> to review the latest information.</p>
   `;
