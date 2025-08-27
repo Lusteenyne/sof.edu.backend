@@ -206,11 +206,11 @@ const sendDepartmentChangeMail = (email, fullName, newDepartment) => {
 };
 
 const sendGeneralFeeUpdateMail = (emailList) => {
-  const subject = 'Tuition/Fee Update Notification';
-  const plainText = `Dear Student,\n\nThe tuition/fee structure has been updated. Please log in to your portal to review.`;
+  const subject = 'Tuition Update Notification';
+  const plainText = `Dear Student,\n\nThe tuition structure has been updated. Please log in to your portal to review.`;
   const htmlContent = `
     <h2>Tuition/Fee Update Notification</h2>
-    <p>The school's tuition or fee structure has been updated.</p>
+    <p>The school's tuition structure has been updated.</p>
     <p>Please <a href="https://sof-edu.onrender.com/login-student">log in</a> to review the latest information.</p>
   `;
 

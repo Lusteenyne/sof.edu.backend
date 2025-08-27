@@ -15,7 +15,9 @@ app.use(express.json({ limit: "50mb"}));
 
 
 //Routes
-app.use(express.static("public"));
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
+
 app.use("/student", studentrouter); 
 app.use("/admin",adminrouter); 
 app.use("/teacher", teacherrouter); 
