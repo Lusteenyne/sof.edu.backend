@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 const baseStyles = `
   body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px; color: #333; }
   .container { max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; }
-  .logo { display: block; margin: 0 auto 20px auto; width: 100px; }
+  .logo { display: block; margin: 0 auto 20px auto; width: 300px; height: 200px; }
   h2 { color: #1a73e8; text-align: center; }
   p { font-size: 16px; line-height: 1.5; text-align: center; }
   .footer { max-width: 600px; margin: 20px auto 0 auto; font-size: 13px; color: #777; text-align: center; }
