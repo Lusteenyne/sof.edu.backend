@@ -353,7 +353,7 @@ const rejectTeacher = async (req, res) => {
       return res.status(400).json({ message: "Cannot reject an already approved teacher" });
     }
 
-    // Notify the Admin who rejected
+    
     await sendNotification({
       message: `You rejected Staff ${teacher.firstName}`,
       type: 'info',
@@ -364,23 +364,12 @@ const rejectTeacher = async (req, res) => {
     // Notify the Teacher: Rejection
     await sendNotification({
       message: `Your account has been rejected by the School Administration.`,
-      type: 'error',
+      type: 'warning',
       recipient: teacher._id,
       recipientModel: 'Teacher'
     });
 
-    // // Optionally, send email to Teacher
-    // await sendTeacherRejectionEmail(
-    //   teacher.email,
-    //   teacher.title,
-    //   `${teacher.firstName} ${teacher.lastName}`
-    // );
-
-    // Remove the teacher from database
-    await teacher.deleteOne();
-
-    console.log("Teacher Rejected and Removed:", teacherId);
-    res.status(200).json({ message: "Teacher rejected and removed" });
+    
 
   } catch (error) {
     console.error("Reject Teacher Error:", error);
@@ -398,7 +387,7 @@ const deleteTeacher = async (req, res) => {
     // Optionally, notify the teacher before deletion
     await sendNotification({
       message: `Your account has been deleted by the School Administration.`,
-      type: 'error',
+      type: 'warning',
       recipient: teacher._id,
       recipientModel: 'Teacher'
     });
