@@ -33,6 +33,7 @@ async function uploadFilesToCloudinary(files) {
     try {
       const cloudinaryResponse = await cloudinary.uploader.upload(file.path, {
         resource_type: "raw", // Handles PDFs, DOCXs, ZIPs, etc.
+          type: "upload",   
         folder: "teacher-uploads",
         public_id: path.parse(file.originalname).name
           .replace(/\s+/g, "_")
