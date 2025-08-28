@@ -368,26 +368,7 @@ const getMyCourses = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
-    // Profile completion check
-    const requiredFields = ['phoneNumber',
-      'age',
-      'gender',
-      'maritalStatus',
-      'dateOfBirth',
-      'nationality',
-      'stateOfOrigin',
-      'address',];
-    const missingFields = requiredFields.filter(
-      (field) => !student[field] || student[field].toString().trim() === ''
-    );
-    if (missingFields.length > 0) {
-      return res.status(403).json({
-        message: 'Complete your profile before accessing this feature',
-        missingFields,
-      });
-    }
-
-
+    
     res.json({ courses: student.courses });
   } catch (err) {
     console.error('Error fetching courses:', err);
@@ -558,26 +539,6 @@ const getAvailableCoursesForStudent = async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    // Inline profile completion check
-    const requiredFields = ['phoneNumber',
-      'age',
-      'gender',
-      'maritalStatus',
-      'dateOfBirth',
-      'nationality',
-      'stateOfOrigin',
-      'address',];
-    const missingFields = requiredFields.filter(
-      (field) => !student[field] || student[field].toString().trim() === ''
-    );
-
-    if (missingFields.length > 0) {
-      return res.status(403).json({
-        message: 'Complete your profile before accessing this feature',
-        missingFields,
-      });
-    }
-
     const { department, level, semester } = student;
     const normalizedSemester = semester.trim();
 
@@ -596,7 +557,6 @@ const getAvailableCoursesForStudent = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 
 const submitCourses = async (req, res) => {
