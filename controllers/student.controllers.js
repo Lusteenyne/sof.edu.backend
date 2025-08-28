@@ -1029,6 +1029,26 @@ const initiatePaystackPayment = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized or missing student data' });
     }
 
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
+
     const config = await PaymentConfig.findOne({});
     if (!config || !config.amount) {
       console.warn('No payment config or amount found');
