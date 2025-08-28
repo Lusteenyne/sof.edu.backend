@@ -1674,7 +1674,7 @@ const sendMessageToTeacher = async (req, res) => {
       return res.status(400).json({ message: "Teacher and text are required" });
     }
 
-    const teacher = await Teacher.findById(teacherId).select("firstName lastName email");
+    const teacher = await Teacher.findById(teacherId).select("title firstName lastName email");
     if (!teacher) {
       return res.status(404).json({ message: "Teacher not found" });
     }
