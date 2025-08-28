@@ -38,7 +38,6 @@ const sendNotification = async ({ message, type = 'info', recipient = null, reci
 };
 
 
-// Register
 const registerTeacher = async (req, res) => {
   try {
     console.log("Received teacher registration request");
@@ -48,15 +47,13 @@ const registerTeacher = async (req, res) => {
       return res.status(400).json({ message: "CV and Certificate PDFs are required." });
     }
 
-    // Destructure form fields
-    const { title, firstName, lastName, email,department,  password } = req.body;
+    const { title, firstName, lastName, email, department, password } = req.body;
 
-    // Validate required fields
-    if (!title || !firstName || !lastName || !email || !department  || !password) {
+    if (!title || !firstName || !lastName || !email || !department || !password) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Check for existing teacher by email
+    // Check if teacher already exists
     const existingTeacher = await Teacher.findOne({ email: email.toLowerCase() });
     if (existingTeacher) {
       return res.status(400).json({ message: "Email already registered." });
@@ -66,7 +63,7 @@ const registerTeacher = async (req, res) => {
     const uploadResults = await uploadFilesToCloudinary([req.files.cv[0], req.files.certificate[0]]);
     const cvUrl = uploadResults['cv'].url;
     const certificateUrl = uploadResults['certificate'].url;
-    console.log("Files uploaded successfully:", { cvUrl, certificateUrl });
+    console.log("Files uploaded:", { cvUrl, certificateUrl });
 
     console.log("Hashing password...");
     const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -90,10 +87,10 @@ const registerTeacher = async (req, res) => {
     await sendTeacherWelcomeEmail(email, title, `${firstName} ${lastName}`);
     await sendNewTeacherNotificationToAdmin(`${title} ${firstName} ${lastName}`, department);
 
-    res.status(201).json({ message: 'Teacher registered successfully' });
+    res.status(201).json({ message: "Teacher registered successfully", cvUrl, certificateUrl });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ message: 'Server error', error });
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
