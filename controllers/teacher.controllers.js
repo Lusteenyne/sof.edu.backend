@@ -107,6 +107,71 @@ const registerTeacher = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+const registerTeacher = async (req, res) => {
+  try {
+    console.log("Received teacher registration request");
+
+    // Check if files exist
+    if (!req.files?.cv || !req.files?.certificate) {
+      return res.status(400).json({ message: "CV and Certificate PDFs are required." });
+    }
+
+    // Validate request body
+    const { title, firstName, lastName, email, department, password } = req.body;
+    if (!title || !firstName || !lastName || !email || !department || !password) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Check if teacher already exists
+    const existingTeacher = await Teacher.findOne({ email: email.toLowerCase() });
+    if (existingTeacher) {
+      return res.status(400).json({ message: "Email already registered." });
+    }
+
+    // Get file paths (served from backend /uploads)
+    const cvFile = req.files.cv[0];
+    const certificateFile = req.files.certificate[0];
+
+    const cvUrl = `/uploads/${cvFile.filename}`;
+    const certificateUrl = `/uploads/${certificateFile.filename}`;
+
+    console.log("Files saved locally:", { cvUrl, certificateUrl });
+
+    // Hash password
+    console.log("Hashing password...");
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Create teacher
+    const newTeacher = new Teacher({
+      title,
+      firstName,
+      lastName,
+      email: email.toLowerCase(),
+      department,
+      cvUrl,
+      certificateUrl,
+      passwordHash,
+      teacherId: `TCH${Date.now().toString().slice(-5)}`,
+    });
+
+    await newTeacher.save();
+    console.log("Teacher created:", newTeacher._id);
+
+    // Send notifications
+    await sendTeacherWelcomeEmail(email, title, `${firstName} ${lastName}`);
+    await sendNewTeacherNotificationToAdmin(`${title} ${firstName} ${lastName}`, department);
+
+    // Respond
+    res.status(201).json({
+      message: "Teacher registered successfully",
+      cvUrl,
+      certificateUrl,
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
 
 
 // Login
