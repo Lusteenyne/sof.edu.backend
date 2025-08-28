@@ -42,57 +42,72 @@ const registerTeacher = async (req, res) => {
   try {
     console.log("Received teacher registration request");
 
-    // Validate file uploads
+   
     if (!req.files?.cv || !req.files?.certificate) {
       return res.status(400).json({ message: "CV and Certificate PDFs are required." });
     }
 
+    
     const { title, firstName, lastName, email, department, password } = req.body;
-
     if (!title || !firstName || !lastName || !email || !department || !password) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Check if teacher already exists
     const existingTeacher = await Teacher.findOne({ email: email.toLowerCase() });
     if (existingTeacher) {
       return res.status(400).json({ message: "Email already registered." });
     }
 
+   
     console.log("Uploading files to Cloudinary...");
-    const uploadResults = await uploadFilesToCloudinary([req.files.cv[0], req.files.certificate[0]]);
-    const cvUrl = uploadResults['cv'].url;
-    const certificateUrl = uploadResults['certificate'].url;
+    const uploadResults = await uploadFilesToCloudinary([
+      req.files.cv[0],
+      req.files.certificate[0],
+    ]);
+
+  
+    const cvUrl = uploadResults["cv"].url;
+    const certificateUrl = uploadResults["certificate"].url;
     console.log("Files uploaded:", { cvUrl, certificateUrl });
 
+  
     console.log("Hashing password...");
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
+    
     const newTeacher = new Teacher({
       title,
       firstName,
       lastName,
       email: email.toLowerCase(),
       department,
-      cvUrl,
+      cvUrl, 
       certificateUrl,
       passwordHash,
-      teacherId: `TCH${Date.now().toString().slice(-5)}`
+      teacherId: `TCH${Date.now().toString().slice(-5)}`,
     });
 
     await newTeacher.save();
     console.log("Teacher created:", newTeacher._id);
 
-    // Notifications
     await sendTeacherWelcomeEmail(email, title, `${firstName} ${lastName}`);
-    await sendNewTeacherNotificationToAdmin(`${title} ${firstName} ${lastName}`, department);
+    await sendNewTeacherNotificationToAdmin(
+      `${title} ${firstName} ${lastName}`,
+      department
+    );
 
-    res.status(201).json({ message: "Teacher registered successfully", cvUrl, certificateUrl });
+  
+    res.status(201).json({
+      message: "Teacher registered successfully",
+      cvUrl,
+      certificateUrl,
+    });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 // Login
 const loginTeacher = async (req, res) => {
