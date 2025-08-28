@@ -340,6 +340,83 @@ const approveTeacher = async (req, res) => {
   }
 };
 
+
+const rejectTeacher = async (req, res) => {
+  console.log("Reject Teacher Request:", req.params);
+  try {
+    const { teacherId } = req.params;
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) return res.status(404).json({ message: "Teacher not found" });
+
+    // Optionally, check if already approved
+    if (teacher.isApproved) {
+      return res.status(400).json({ message: "Cannot reject an already approved teacher" });
+    }
+
+    // Notify the Admin who rejected
+    await sendNotification({
+      message: `You rejected Staff ${teacher.firstName}`,
+      type: 'info',
+      recipient: req.user.id,
+      recipientModel: 'Admin'
+    });
+
+    // Notify the Teacher: Rejection
+    await sendNotification({
+      message: `Your account has been rejected by the School Administration.`,
+      type: 'error',
+      recipient: teacher._id,
+      recipientModel: 'Teacher'
+    });
+
+    // // Optionally, send email to Teacher
+    // await sendTeacherRejectionEmail(
+    //   teacher.email,
+    //   teacher.title,
+    //   `${teacher.firstName} ${teacher.lastName}`
+    // );
+
+    // Remove the teacher from database
+    await teacher.deleteOne();
+
+    console.log("Teacher Rejected and Removed:", teacherId);
+    res.status(200).json({ message: "Teacher rejected and removed" });
+
+  } catch (error) {
+    console.error("Reject Teacher Error:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+const deleteTeacher = async (req, res) => {
+  console.log("Delete Teacher Request:", req.params);
+  try {
+    const { teacherId } = req.params;
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) return res.status(404).json({ message: "Teacher not found" });
+
+    // Optionally, notify the teacher before deletion
+    await sendNotification({
+      message: `Your account has been deleted by the School Administration.`,
+      type: 'error',
+      recipient: teacher._id,
+      recipientModel: 'Teacher'
+    });
+
+    // Delete the teacher
+    await teacher.deleteOne();
+
+    console.log("Teacher Deleted:", teacherId);
+    res.status(200).json({ message: "Teacher deleted successfully" });
+
+  } catch (error) {
+    console.error("Delete Teacher Error:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
+
 // DASHBOARD STATS
 const getAdminDashboardStats = async (req, res) => {
   console.log("Fetching Dashboard Stats");
@@ -375,6 +452,8 @@ const getAdminDashboardStats = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 // GET NOTIFICATIONS
 const getAdminNotifications = async (req, res) => {
@@ -505,40 +584,6 @@ const updateTeacherByAdmin = async (req, res) => {
   }
 };
 
-const rejectTeacher = async (req, res) => {
-  console.log("Reject Teacher:", req.params.id);
-  try {
-    const teacher = await Teacher.findByIdAndUpdate(req.params.id, { status: "rejected" }, { new: true });
-
-    if (!teacher) {
-      return res.status(404).json({ message: "Teacher not found" });
-    }
-
-    // Send notification to the teacher
-    await sendNotification({
-      message: "Your registration has been reviewed and was rejected, Please contact the school.",
-      type: "error",
-      recipient: teacher._id,
-      recipientModel: "Teacher",
-    });
-
-    res.json({ message: "Teacher rejected" });
-  } catch (error) {
-    console.error("Reject Teacher Error:", error);
-    res.status(500).json({ message: "Failed to reject teacher" });
-  }
-};
-
-const deleteTeacher = async (req, res) => {
-  console.log("Delete Teacher:", req.params.id);
-  try {
-    await Teacher.findByIdAndDelete(req.params.id);
-    res.json({ message: "Teacher deleted" });
-  } catch (error) {
-    console.error("Delete Teacher Error:", error);
-    res.status(500).json({ message: "Failed to delete teacher" });
-  }
-};
 
 
 // STUDENT MANAGEMENT
