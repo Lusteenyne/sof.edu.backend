@@ -368,6 +368,25 @@ const getMyCourses = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
 
     res.json({ courses: student.courses });
   } catch (err) {
@@ -539,6 +558,26 @@ const getAvailableCoursesForStudent = async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
+    // Inline profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
     const { department, level, semester } = student;
     const normalizedSemester = semester.trim();
 
@@ -565,13 +604,33 @@ const submitCourses = async (req, res) => {
     console.log('Submit courses for studentId:', req.user.id, 'Payload:', req.body.courseIds);
 
     const { courseIds } = req.body;
-
     if (!Array.isArray(courseIds) || courseIds.length === 0) {
       return res.status(400).json({ message: 'No courses selected' });
     }
 
-    const student = await Student.findById(req.user.id).select('courses firstname lastname email semester department level');
+    const student = await Student.findById(req.user.id).select(
+      'courses firstname lastname email semester department level phoneNumber age gender dateOfBirth address'
+    );
     if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before submitting courses',
+        missingFields,
+      });
+    }
 
     const existingCourseIds = student.courses.map(c => c.course.toString());
     const newCourses = courseIds.filter(id => !existingCourseIds.includes(id));
@@ -594,22 +653,18 @@ const submitCourses = async (req, res) => {
 
     console.log(`Added ${toAdd.length} new course(s) for approval.`);
 
-    // Notify Admin
     await sendNotification({
       type: 'info',
       message: `${student.firstname} ${student.lastname} submitted ${toAdd.length} course(s) for approval.`,
       recipientModel: 'Admin',
-      
     });
 
     await sendCourseRegistrationMail(
-  `${student.firstname} ${student.lastname}`,
-  student.semester || 'Current Semester',
-  student.department,
-  student.level
-);
-
-
+      `${student.firstname} ${student.lastname}`,
+      student.semester || 'Current Semester',
+      student.department,
+      student.level
+    );
 
     res.status(200).json({
       message: 'Courses submitted successfully',
@@ -631,6 +686,28 @@ const getSubmittedCourses = async (req, res) => {
       .populate('courses.course', 'code title unit semester level department');
 
     if (!student) return res.status(404).json({ message: 'Student not found' });
+
+// Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before getting your submitted courses',
+        missingFields,
+      });
+    }
+
+
+
 
     // Filter courses based on student's current semester, level, and department
     const filteredCourses = student.courses.filter((entry) => {
@@ -661,6 +738,26 @@ const getStudentApprovedResults = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
+
+// Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before seeing your approved courses',
+        missingFields,
+      });
+    }
+
 
     //  Get all approved results for the student
     const results = await Result.find({
@@ -758,6 +855,26 @@ const getStudentPayments = async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
+
     const level = Number(student.level);
     const session = student.session?.trim();
 
@@ -838,6 +955,27 @@ const uploadTransferReceipt = async (req, res) => {
 
     const student = await Student.findById(studentId);
     if (!student) return res.status(404).json({ message: 'Student not found' });
+
+// Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
+
 
     const file = req.file;
     if (!file) return res.status(400).json({ message: 'No file uploaded' });
@@ -1048,6 +1186,24 @@ const getStudentAssignments = async (req, res) => {
       console.warn(`[GET ASSIGNMENTS] Student with ID ${studentId} not found.`);
       return res.status(404).json({ message: 'Student not found' });
     }
+// Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
 
     const courseIds = student.courses.map(c => c.course?._id).filter(Boolean);
     console.log(`[GET ASSIGNMENTS] Student is registered for courses: ${courseIds.join(', ')}`);
@@ -1083,6 +1239,26 @@ const submitAssignment = async (req, res) => {
       console.warn(`Assignment with ID ${assignmentId} not found.`);
       return res.status(404).json({ message: 'Assignment not found' });
     }
+
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
 
     const student = await Student.findById(studentId).select('firstname lastname');
     if (!student) {
@@ -1140,12 +1316,35 @@ const submitAssignment = async (req, res) => {
 };
 
 
-// Get Student Grade
 const getStudentGrade = async (req, res) => {
   const studentId = req.user.id;
   const { assignmentId } = req.params;
 
   try {
+    const student = await Student.findById(studentId).select(
+      'phoneNumber age gender dateOfBirth address'
+    );
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing grades',
+        missingFields,
+      });
+    }
+
     const submission = await AssignmentSubmission.findOne({
       assignmentId,
       studentId,
@@ -1157,12 +1356,12 @@ const getStudentGrade = async (req, res) => {
 
     res.status(200).json({
       message: 'Submission found',
-      score: submission.score != null ? submission.score : 0, // ensure score is numeric
+      score: submission.score != null ? submission.score : 0,
       submittedAt: submission.submittedAt,
       assignmentTitle: submission.assignmentId.title,
       deadline: submission.assignmentId.deadline,
       fileUrls: submission.fileUrls,
-      submissionMessage: submission.message, // rename to avoid conflict
+      submissionMessage: submission.message,
     });
   } catch (err) {
     console.error('Error fetching student grade:', err);
@@ -1170,21 +1369,38 @@ const getStudentGrade = async (req, res) => {
   }
 };
 
-// Get All Submissions by Student
 const getStudentSubmissions = async (req, res) => {
   const studentId = req.user.id;
   console.log(`[GET SUBMISSIONS] Student ${studentId} is requesting their submissions.`);
 
   try {
+    const student = await Student.findById(studentId).select(
+      'phoneNumber age gender dateOfBirth address'
+    );
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing submissions',
+        missingFields,
+      });
+    }
+
     const submissions = await AssignmentSubmission.find({ studentId })
       .populate('assignmentId', 'title deadline course')
       .sort({ submittedAt: -1 });
-
-    if (!submissions || submissions.length === 0) {
-      console.log(`[GET SUBMISSIONS] No submissions found for student ${studentId}.`);
-    } else {
-      console.log(`[GET SUBMISSIONS] Found ${submissions.length} submissions for student ${studentId}.`);
-    }
 
     res.status(200).json({ submissions });
   } catch (err) {
@@ -1193,7 +1409,6 @@ const getStudentSubmissions = async (req, res) => {
   }
 };
 
-// Update Submission
 const updateAssignmentSubmission = async (req, res) => {
   const studentId = req.user.id;
   const { assignmentId } = req.params;
@@ -1204,14 +1419,31 @@ const updateAssignmentSubmission = async (req, res) => {
   try {
     const assignment = await Assignment.findById(assignmentId);
     if (!assignment) {
-      console.warn(`Assignment with ID ${assignmentId} not found.`);
       return res.status(404).json({ message: 'Assignment not found' });
     }
 
-    const student = await Student.findById(studentId).select('firstname lastname');
-    if (!student) {
-      console.warn(`Student with ID ${studentId} not found.`);
-      return res.status(404).json({ message: 'Student not found' });
+    const student = await Student.findById(studentId).select(
+      'firstname lastname phoneNumber age gender dateOfBirth address'
+    );
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    // Profile completion check
+    const requiredFields = ['phoneNumber',
+      'age',
+      'gender',
+      'maritalStatus',
+      'dateOfBirth',
+      'nationality',
+      'stateOfOrigin',
+      'address',];
+    const missingFields = requiredFields.filter(
+      (field) => !student[field] || student[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before updating submissions',
+        missingFields,
+      });
     }
 
     // Upload updated files (if any)
@@ -1232,30 +1464,26 @@ const updateAssignmentSubmission = async (req, res) => {
     );
 
     if (!updatedSubmission) {
-      console.warn(`No submission found for student ${studentId} and assignment ${assignmentId}`);
       return res.status(404).json({ message: 'Submission not found' });
     }
 
-    // Notify teacher
     await sendNotification({
       type: 'info',
       message: `${student.firstname} ${student.lastname} updated their assignment submission.`,
       recipientModel: 'Teacher',
       recipientId: assignment.teacherId,
-     
     });
 
-    console.log(`Submission updated successfully for student ${studentId}`);
     res.status(200).json({
       message: 'Submission updated successfully',
       submission: updatedSubmission,
     });
-
   } catch (error) {
     console.error(`Error updating submission for student ${studentId}:`, error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 //to het all teachers
 const getAllTeachers = async (req, res) => {
@@ -1266,6 +1494,8 @@ const getAllTeachers = async (req, res) => {
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
+
+   
 
     const enrolledCourseIds = student.courses.map(c => c.course);  
     console.log("Student's enrolled courses:", enrolledCourseIds);
