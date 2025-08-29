@@ -15,7 +15,7 @@ const Result = require('../model/result.model');
 const PaymentConfig = require('../model/paymentConfig.model');
 const mongoose = require('mongoose');
 const Payment = require('../model/payment.model');
-const { sendSuperAdminMail, sendEmail, sendPasswordResetEmail, sendTeacherApprovalEmail, sendLandingContactEmail, sendLandingContactAutoReply, sendAdminMessageNotificationToStudent, sendAdminMessageNotificationToTeacher, sendDepartmentChangeMail, sendCourseApprovalMail,sendLevelChangeNotification, sendGeneralFeeUpdateMail, sendTuitionPaymentApproved } = require('../utilis/mailer');
+const { sendSuperAdminMail, sendEmail, sendPasswordResetEmail, sendTeacherApprovalEmail,sendTeacherRejectionEmail, sendLandingContactEmail, sendLandingContactAutoReply, sendAdminMessageNotificationToStudent, sendAdminMessageNotificationToTeacher, sendDepartmentChangeMail, sendCourseApprovalMail,sendLevelChangeNotification, sendGeneralFeeUpdateMail, sendTuitionPaymentApproved } = require('../utilis/mailer');
 
 // ADMIN SIGNUP
 
