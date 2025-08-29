@@ -925,8 +925,7 @@ const getStudentPayments = async (req, res) => {
 
 
 
-
-
+// UPLOAD TRANSFER RECEIPT
 const uploadTransferReceipt = async (req, res) => {
   try {
     const studentId = req.user?.id;
@@ -935,15 +934,17 @@ const uploadTransferReceipt = async (req, res) => {
     const student = await Student.findById(studentId);
     if (!student) return res.status(404).json({ message: 'Student not found' });
 
-// Profile completion check
-    const requiredFields = ['phoneNumber',
+    // Profile completion check
+    const requiredFields = [
+      'phoneNumber',
       'age',
       'gender',
       'maritalStatus',
       'dateOfBirth',
       'nationality',
       'stateOfOrigin',
-      'address',];
+      'address',
+    ];
     const missingFields = requiredFields.filter(
       (field) => !student[field] || student[field].toString().trim() === ''
     );
@@ -954,7 +955,19 @@ const uploadTransferReceipt = async (req, res) => {
       });
     }
 
-
+    // Prevent paying again if already confirmed for this level/session
+    const alreadyPaid = await Payment.findOne({
+      studentId,
+      session: student.session,
+      level: student.level,
+      status: 'confirmed',
+      verifiedByAdmin: true,
+    });
+    if (alreadyPaid) {
+      return res.status(403).json({
+        message: `You have already completed tuition payment for ${student.level} (${student.session}). No further payment is required.`,
+      });
+    }
 
     const file = req.file;
     if (!file) return res.status(400).json({ message: 'No file uploaded' });
@@ -966,9 +979,10 @@ const uploadTransferReceipt = async (req, res) => {
       status: 'pending',
       method: 'transfer',
     });
-
     if (existingPending) {
-      return res.status(409).json({ message: 'Pending transfer already uploaded. Awaiting verification.' });
+      return res.status(409).json({
+        message: 'Pending transfer already uploaded. Awaiting verification.',
+      });
     }
 
     const config = await PaymentConfig.findOne();
@@ -977,25 +991,24 @@ const uploadTransferReceipt = async (req, res) => {
     const result = await cloudinary.uploader.upload(file.path, { folder: 'receipts' });
 
     const newPayment = new Payment({
-  studentId,
-  session: student.session,
-  level: student.level,
-  semester: student.semester,      
-  department: student.department,   
-  reference: `TRF-${Date.now()}`,   
-  amountExpected: config.amount || 0,
-  amountPaid: 0,
-  status: 'pending',
-  receiptURL: result.secure_url,
-  method: 'transfer',
-  remark: 'Awaiting verification',
-  verifiedByAdmin: false,
-});
-
+      studentId,
+      session: student.session,
+      level: student.level,
+      semester: student.semester,
+      department: student.department,
+      reference: `TRF-${Date.now()}`,
+      amountExpected: config.amount || 0,
+      amountPaid: 0,
+      status: 'pending',
+      receiptURL: result.secure_url,
+      method: 'transfer',
+      remark: 'Awaiting verification',
+      verifiedByAdmin: false,
+    });
 
     await newPayment.save();
 
-    fs.unlink(file.path, err => {
+    fs.unlink(file.path, (err) => {
       if (err) console.error('Failed to delete uploaded file:', err);
     });
 
@@ -1010,14 +1023,13 @@ const uploadTransferReceipt = async (req, res) => {
     });
 
     return res.status(201).json({ message: 'Receipt uploaded successfully', payment: newPayment });
-
   } catch (err) {
     console.error('Error uploading receipt:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 };
 
-
+// INITIATE PAYSTACK PAYMENT
 const initiatePaystackPayment = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -1030,14 +1042,16 @@ const initiatePaystackPayment = async (req, res) => {
     }
 
     // Profile completion check
-    const requiredFields = ['phoneNumber',
+    const requiredFields = [
+      'phoneNumber',
       'age',
       'gender',
       'maritalStatus',
       'dateOfBirth',
       'nationality',
       'stateOfOrigin',
-      'address',];
+      'address',
+    ];
     const missingFields = requiredFields.filter(
       (field) => !student[field] || student[field].toString().trim() === ''
     );
@@ -1048,6 +1062,19 @@ const initiatePaystackPayment = async (req, res) => {
       });
     }
 
+   
+    const alreadyPaid = await Payment.findOne({
+      studentId,
+      session: student.session,
+      level: student.level,
+      status: 'paid',
+      verifiedByAdmin: true,
+    });
+    if (alreadyPaid) {
+      return res.status(403).json({
+        message: `You have already completed tuition payment for ${student.level} (${student.session}). No further payment is required.`,
+      });
+    }
 
     const config = await PaymentConfig.findOne({});
     if (!config || !config.amount) {
@@ -1071,7 +1098,6 @@ const initiatePaystackPayment = async (req, res) => {
     return res.status(500).json({ message: 'Server error initializing payment' });
   }
 };
-
 
 
 const verifyPaystackPayment = async (req, res) => {

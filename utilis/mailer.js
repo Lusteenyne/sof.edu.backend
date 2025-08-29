@@ -129,6 +129,25 @@ const sendTeacherApprovalEmail = (email, title, fullName, teacherId) => {
   );
 };
 
+const sendTeacherRejectionEmail = (email, title, fullName) => {
+  return sendEmail(
+    email,
+    'Your Staff Registration Was Not Approved',
+    `Hello ${title} ${fullName},\n\nWe regret to inform you that your registration has not been approved.\n\nPlease contact the school administration using the details on our school landing page, or reach out on WhatsApp: https://wa.me/2349054694470 to speak with a representative regarding the reason for rejection.\n\nImportant: If the issue is not resolved, your record may be permanently removed from the school system.`,
+    `<h2>Registration Not Approved</h2>
+     <p>Dear <strong>${title} ${fullName}</strong>,</p>
+     <p>Unfortunately, your staff registration was not approved at this time.</p>
+     <p>Please contact the school administration using the details on our school landing page. You may also reach us directly on WhatsApp to speak with a representative about the reason for rejection.</p>
+     <p style="color:red; font-weight:bold; margin-top:15px;">
+       Important: If this issue is not resolved, your record may be permanently removed from the school system.
+     </p>
+     <a href="https://sof-edu.onrender.com" style="display:inline-block; margin-top:15px; padding:10px 20px; background:#6c757d; color:white; text-decoration:none; border-radius:5px;">Visit School Website</a>
+     <br><br>
+     <a href="https://wa.me/2349054694470" style="display:inline-block; margin-top:10px; padding:10px 20px; background:#25d366; color:white; text-decoration:none; border-radius:5px;">Contact on WhatsApp</a>`
+  );
+};
+
+
 const sendCourseRegistrationMail = (fullName, semester, department, level) => {
   return sendEmail(
     adminEmail,
@@ -481,5 +500,6 @@ module.exports = {
  sendLandingContactAutoReply,
  sendNewAssignmentEmail,
  sendGradeNotificationEmail,
+ sendTeacherRejectionEmail,
   sendAssignmentSubmissionEmail,
 };
