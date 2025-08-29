@@ -247,7 +247,7 @@ const getAssignedCourses = async (req, res) => {
     const teacher = await Teacher.findById(req.user.id).populate({
       path: 'assignedCourses.course',
       model: 'Course',
-      select: 'title code unit status', 
+      select: 'title code unit status',
     });
 
     if (!teacher) {
@@ -255,10 +255,40 @@ const getAssignedCourses = async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
 
+    // Profile completion check
+    const requiredFields = [
+      'title',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'age',
+      'gender',
+      'department',
+      'nationality',
+      'stateOfOrigin',
+      'dateOfBirth',
+      'address',
+      'maritalStatus',
+    ];
+
+    const missingFields = requiredFields.filter(
+      (field) =>
+        teacher[field] === null ||
+        teacher[field] === undefined ||
+        teacher[field].toString().trim() === ''
+    );
+
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
     console.log('Raw assignedCourses:', teacher.assignedCourses);
 
     const assignedCourses = teacher.assignedCourses
-      .filter(ac => ac.course) 
+      .filter((ac) => ac.course)
       .map((ac) => {
         const courseInfo = {
           _id: ac.course._id,
@@ -283,6 +313,7 @@ const getAssignedCourses = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
 const getMyStudents = async (req, res) => {
   try {
     const teacher = await Teacher.findById(req.user.id);
@@ -291,28 +322,26 @@ const getMyStudents = async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
 
-    // Extract all course IDs the teacher is assigned to
-    const courseIds = teacher.assignedCourses.map(ac => ac.course.toString());
-
+    const courseIds = teacher.assignedCourses.map((ac) => ac.course.toString());
     console.log(`Course IDs assigned to teacher:`, courseIds);
 
-    // Find students who are enrolled in any of those courses (in their 'courses' array)
     const students = await Student.find({
-      'courses.course': { $in: courseIds.map(id => new mongoose.Types.ObjectId(id)) },
+      'courses.course': { $in: courseIds.map((id) => new mongoose.Types.ObjectId(id)) },
     })
       .populate('courses.course', 'title code')
       .select('firstname lastname studentId courses level department');
 
     console.log(`Total students found: ${students.length}`);
 
-    // Log each student for debugging
-    students.forEach(student => {
+    students.forEach((student) => {
       const enrolledCourses = student.courses
-        .filter(c => courseIds.includes(c.course._id.toString()))
-        .map(c => `${c.course.title} (${c.course.code})`)
+        .filter((c) => courseIds.includes(c.course._id.toString()))
+        .map((c) => `${c.course.title} (${c.course.code})`)
         .join(', ');
 
-      console.log(`Student: ${student.firstname} ${student.lastname}, ID: ${student.studentId}, Courses: ${enrolledCourses}`);
+      console.log(
+        `Student: ${student.firstname} ${student.lastname}, ID: ${student.studentId}, Courses: ${enrolledCourses}`
+      );
     });
 
     return res.json({ students });
@@ -321,7 +350,6 @@ const getMyStudents = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 // Forgot Password
 const forgotPassword = async (req, res) => {
@@ -633,6 +661,37 @@ const submitResults = async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
 
+    // Profile completion check
+    const requiredFields = [
+      'title',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'age',
+      'gender',
+      'department',
+      'nationality',
+      'stateOfOrigin',
+      'dateOfBirth',
+      'address',
+      'maritalStatus',
+    ];
+
+    const missingFields = requiredFields.filter(
+      (field) =>
+        teacher[field] === null ||
+        teacher[field] === undefined ||
+        teacher[field].toString().trim() === ''
+    );
+
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
+
     // Fetch course to get code
     const course = await Course.findById(courseId).select('code');
     if (!course) {
@@ -735,24 +794,55 @@ const getSubmittedResults = async (req, res) => {
     console.log('Teacher ID:', teacherId);
     console.log('Course ID:', courseId);
 
-    const results = await Result.find({
-      course: courseId,
-      teacher: teacherId,
-    })
+    // Fetch teacher first
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    // Profile completion check
+    const requiredFields = [
+      'title',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'age',
+      'gender',
+      'department',
+      'nationality',
+      'stateOfOrigin',
+      'dateOfBirth',
+      'address',
+      'maritalStatus',
+    ];
+    const missingFields = requiredFields.filter(
+      (field) =>
+        teacher[field] === null ||
+        teacher[field] === undefined ||
+        teacher[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
+    // Fetch submitted results
+    const results = await Result.find({ course: courseId, teacher: teacherId })
       .populate('student', 'firstname lastname studentId level department')
       .sort({ createdAt: -1 });
 
-    if (!results || results.length === 0) {
+    if (!results.length) {
       console.warn('No results found for this course and teacher');
       return res.status(404).json({ message: 'No submitted results found.' });
     }
 
     console.log(`Fetched ${results.length} submitted result(s)`);
-    res.status(200).json(results);
-
+    return res.status(200).json(results);
   } catch (err) {
     console.error('Error fetching submitted results:', err);
-    res.status(500).json({ message: 'Server error fetching submitted results' });
+    return res.status(500).json({ message: 'Server error fetching submitted results' });
   }
 };
 
@@ -764,6 +854,36 @@ const getStudentsByCourse = async (req, res) => {
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
     }
+       // Profile completion check
+    const requiredFields = [
+      'title',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'age',
+      'gender',
+      'department',
+      'nationality',
+      'stateOfOrigin',
+      'dateOfBirth',
+      'address',
+      'maritalStatus',
+    ];
+
+    const missingFields = requiredFields.filter(
+      (field) =>
+        teacher[field] === null ||
+        teacher[field] === undefined ||
+        teacher[field].toString().trim() === ''
+    );
+
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
 
     const isAssigned = teacher.assignedCourses.some(
       (ac) => ac.course.toString() === courseId
@@ -787,6 +907,8 @@ const getStudentsByCourse = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+
 const giveAssignments = async (req, res) => {
   const { title, description, deadline } = req.body;
   const { courseId } = req.params;
@@ -804,17 +926,47 @@ const giveAssignments = async (req, res) => {
 
   try {
     const teacher = await Teacher.findById(teacherId);
-    const course = await Course.findById(courseId).select("title code"); 
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found.' });
+    }
 
+    // Profile completion check
+    const requiredFields = [
+      'title',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'age',
+      'gender',
+      'department',
+      'nationality',
+      'stateOfOrigin',
+      'dateOfBirth',
+      'address',
+      'maritalStatus',
+    ];
+    const missingFields = requiredFields.filter(
+      (field) =>
+        teacher[field] === null ||
+        teacher[field] === undefined ||
+        teacher[field].toString().trim() === ''
+    );
+    if (missingFields.length > 0) {
+      return res.status(403).json({
+        message: 'Complete your profile before accessing this feature',
+        missingFields,
+      });
+    }
+
+    const course = await Course.findById(courseId).select("title code");
     if (!course) {
       return res.status(404).json({ message: "Course not found." });
     }
 
     // Check if teacher is assigned to this course
-    const isAssigned = teacher?.assignedCourses?.some(ac =>
-      ac.course.toString() === courseId.toString()
+    const isAssigned = teacher.assignedCourses?.some(
+      (ac) => ac.course.toString() === courseId.toString()
     );
-
     if (!isAssigned) {
       console.warn("Unauthorized course access attempt by teacher:", teacherId);
       return res.status(403).json({ message: 'You are not authorized to assign to this course.' });
@@ -838,7 +990,6 @@ const giveAssignments = async (req, res) => {
       .select('_id email firstname lastname');
 
     for (const student of students) {
-      // Build full name correctly
       const fullName = `${student.firstname || ""} ${student.lastname || ""}`.trim() || "Student";
 
       // Send notification
@@ -849,30 +1000,29 @@ const giveAssignments = async (req, res) => {
         recipientModel: 'Student'
       });
 
-      // Send email using updated function
+      // Send email
       if (student.email) {
         await sendNewAssignmentEmail(
           student.email,
-          fullName,          
-          course.title,       
-          course.code,       
-          title,              
+          fullName,
+          course.title,
+          course.code,
+          title,
           deadline
         );
       }
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Assignment created successfully',
-      assignment: newAssignment
+      assignment: newAssignment,
     });
 
   } catch (err) {
     console.error("Error creating assignment:", err);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
-
 
 const getAssignmentsByCourse = async (req, res) => {
   const { courseId } = req.params;
