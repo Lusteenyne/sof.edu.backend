@@ -588,8 +588,9 @@ const submitCourses = async (req, res) => {
     }
 
     const student = await Student.findById(req.user.id).select(
-      'courses firstname lastname email semester department level phoneNumber age gender dateOfBirth address'
-    );
+  'courses firstname lastname email semester department level phoneNumber age gender maritalStatus dateOfBirth nationality stateOfOrigin address'
+);
+
     if (!student) return res.status(404).json({ message: 'Student not found' });
 
     // Profile completion check
