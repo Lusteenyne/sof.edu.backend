@@ -1023,15 +1023,15 @@ const getStudentWithCourses = async (req, res) => {
 
 
 
+// Approve ALL student courses at once
 const approveStudentCourses = async (req, res) => {
   const { studentId } = req.params;
-
   console.log("[APPROVE-ALL] Student ID:", studentId);
 
   try {
     const student = await Student.findById(studentId)
-      .populate('courses.course')
-      .select('firstname lastname email level courses semester');
+      .populate("courses.course")
+      .select("firstname lastname email level courses semester");
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
@@ -1041,14 +1041,20 @@ const approveStudentCourses = async (req, res) => {
       return res.status(400).json({ message: "No courses to approve" });
     }
 
-    // Approve every course
-    student.courses.forEach(c => {
-      c.status = "approved";
-    });
+    // Approve only courses not already approved
+    const pendingCourses = student.courses.filter(c => c.status !== "approved");
 
+    if (pendingCourses.length === 0) {
+      return res.status(200).json({
+        message: "All courses already approved",
+        student,
+      });
+    }
+
+    pendingCourses.forEach(c => { c.status = "approved"; });
     await student.save();
 
-    // Send notification for all courses approval
+    // Notify student
     await sendNotification({
       message: `All your registered courses for ${student.semester || "this semester"} have been approved.`,
       type: "success",
@@ -1056,7 +1062,7 @@ const approveStudentCourses = async (req, res) => {
       recipientModel: "Student",
     });
 
-    // Send single approval email
+    // Send approval email once
     await sendCourseApprovalMail(
       student.email,
       `${student.firstname} ${student.lastname}`,
@@ -1064,15 +1070,80 @@ const approveStudentCourses = async (req, res) => {
     );
 
     res.status(200).json({
-      message: "All courses approved successfully",
+      message: "All pending courses approved successfully",
       student,
     });
-
   } catch (err) {
     console.error("[APPROVE-ALL] Error:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+// Approve a SINGLE student course
+const approveStudentCourse = async (req, res) => {
+  const { studentId, courseId } = req.params;
+  console.log("[APPROVE] Student ID:", studentId);
+  console.log("[APPROVE] Course ID:", courseId);
+
+  try {
+    const student = await Student.findById(studentId)
+      .populate("courses.course")
+      .select("firstname lastname email level courses semester");
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const courseEntry = student.courses.find(
+      c => c.course._id.toString() === courseId
+    );
+
+    if (!courseEntry) {
+      return res.status(404).json({ message: "Course not found in student's list" });
+    }
+
+    if (courseEntry.status === "approved") {
+      return res.status(200).json({ message: "Course already approved", student });
+    }
+
+    // Approve single course
+    courseEntry.status = "approved";
+    await student.save();
+
+    const courseCode = courseEntry.course.code || "Unknown Code";
+    const courseTitle = courseEntry.course.title || "Untitled Course";
+
+    // Notify student
+    await sendNotification({
+      message: `Your course registration for ${courseCode} has been approved.`,
+      type: "success",
+      recipient: student._id,
+      recipientModel: "Student",
+    });
+
+    // Check if all courses now approved
+    const allApproved = student.courses.every(c => c.status === "approved");
+
+    if (allApproved) {
+      await sendCourseApprovalMail(
+        student.email,
+        `${student.firstname} ${student.lastname}`,
+        student.semester || "this semester"
+      );
+    }
+
+    res.status(200).json({
+      message: "Course approved" + (allApproved ? " – All courses approved" : ""),
+      student,
+    });
+  } catch (err) {
+    console.error("[APPROVE] Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 
 const rejectStudentCourse = async (req, res) => {
   const { studentId, courseId } = req.params;
@@ -2064,6 +2135,7 @@ module.exports = {
   deleteCourse,
   assignCoursesToStudent,
   approveStudentCourses,
+  approveStudentCourse,
   getStudentWithCourses,
  rejectStudentCourse,
   updateTeacherByAdmin,

@@ -46,6 +46,7 @@ const {
 
   // Course Approval/Rejection
   approveStudentCourses,
+  approveStudentCourse,
   rejectStudentCourse,
   approveStudentResult,
 
@@ -122,6 +123,10 @@ adminrouter.patch('/students/:studentId/update', authenticateToken, updateStuden
 
 // ─────────── STUDENT COURSE APPROVAL/REJECTION ───────────
 adminrouter.patch("/students/:studentId/approve-courses", authenticateToken, approveStudentCourses);
+
+
+// Approve one course
+adminrouter.patch('/students/:studentId/courses/:courseId/approve', authenticateToken, approveStudentCourse)
 
 adminrouter.patch('/students/:studentId/courses/:courseId/reject', authenticateToken, rejectStudentCourse);
 
