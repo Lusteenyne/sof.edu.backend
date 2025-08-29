@@ -718,15 +718,16 @@ const updateStudentDetails = async (req, res) => {
 
 
 const deleteStudent = async (req, res) => {
-  console.log("Delete Student:", req.params.id);
+     console.log("Delete Student:", req.params.studentId);
   try {
     // Ensure only admins can delete
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-   
-    const student = await Student.findByIdAndDelete(req.params.id);
+
+const student = await Student.findByIdAndDelete(req.params.studentId);
+
 
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
@@ -1022,11 +1023,10 @@ const getStudentWithCourses = async (req, res) => {
 
 
 
-const approveStudentCourse = async (req, res) => {
-  const { studentId, courseId } = req.params;
+const approveStudentCourses = async (req, res) => {
+  const { studentId } = req.params;
 
-  console.log("[APPROVE] Student ID:", studentId);
-  console.log("[APPROVE] Course ID:", courseId);
+  console.log("[APPROVE-ALL] Student ID:", studentId);
 
   try {
     const student = await Student.findById(studentId)
@@ -1037,49 +1037,39 @@ const approveStudentCourse = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const courseEntry = student.courses.find(c => c.course._id.toString() === courseId);
-    if (!courseEntry) {
-      return res.status(404).json({ message: "Course not found in student's list" });
+    if (!student.courses || student.courses.length === 0) {
+      return res.status(400).json({ message: "No courses to approve" });
     }
 
-    if (courseEntry.status === "approved") {
-      return res.status(200).json({ message: "Course already approved", student });
-    }
+    // Approve every course
+    student.courses.forEach(c => {
+      c.status = "approved";
+    });
 
-    // Approve the course
-    courseEntry.status = "approved";
     await student.save();
 
-    const courseCode = courseEntry.course.code || "Unknown Code";
-    const courseTitle = courseEntry.course.title || "Untitled Course";
-
-    // Send notification for this specific course approval
+    // Send notification for all courses approval
     await sendNotification({
-      message: `Your course registration for ${courseCode} has been approved.`,
+      message: `All your registered courses for ${student.semester || "this semester"} have been approved.`,
       type: "success",
       recipient: student._id,
       recipientModel: "Student",
     });
 
-    // Check if ALL courses are now approved
-    const allApproved = student.courses.every(c => c.status === "approved");
-
-    if (allApproved) {
-      // All courses approved – send email once
-      await sendCourseApprovalMail(
-        student.email,
-        `${student.firstname} ${student.lastname}`,
-        student.semester || "this semester"
-      );
-    }
+    // Send single approval email
+    await sendCourseApprovalMail(
+      student.email,
+      `${student.firstname} ${student.lastname}`,
+      student.semester || "this semester"
+    );
 
     res.status(200).json({
-      message: "Course approved" + (allApproved ? " – All courses approved" : ""),
+      message: "All courses approved successfully",
       student,
     });
 
   } catch (err) {
-    console.error("[APPROVE] Error:", err);
+    console.error("[APPROVE-ALL] Error:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -2073,7 +2063,7 @@ module.exports = {
   updateCourse,
   deleteCourse,
   assignCoursesToStudent,
-  approveStudentCourse,
+  approveStudentCourses,
   getStudentWithCourses,
  rejectStudentCourse,
   updateTeacherByAdmin,
