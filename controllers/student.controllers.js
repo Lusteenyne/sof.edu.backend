@@ -588,20 +588,16 @@ const submitCourses = async (req, res) => {
     }
 
     const student = await Student.findById(req.user.id).select(
-  'courses firstname lastname email semester department level phoneNumber age gender maritalStatus dateOfBirth nationality stateOfOrigin address'
-);
+      'courses firstname lastname email semester department level phoneNumber age gender maritalStatus dateOfBirth nationality stateOfOrigin address'
+    );
 
     if (!student) return res.status(404).json({ message: 'Student not found' });
 
     // Profile completion check
-    const requiredFields = ['phoneNumber',
-      'age',
-      'gender',
-      'maritalStatus',
-      'dateOfBirth',
-      'nationality',
-      'stateOfOrigin',
-      'address',];
+    const requiredFields = [
+      'phoneNumber','age','gender','maritalStatus',
+      'dateOfBirth','nationality','stateOfOrigin','address'
+    ];
     const missingFields = requiredFields.filter(
       (field) => !student[field] || student[field].toString().trim() === ''
     );
@@ -612,14 +608,19 @@ const submitCourses = async (req, res) => {
       });
     }
 
+    // Ensure no duplicates at all
     const existingCourseIds = student.courses.map(c => c.course.toString());
-    const newCourses = courseIds.filter(id => !existingCourseIds.includes(id));
 
-    if (newCourses.length === 0) {
-      return res.status(400).json({ message: 'All selected courses are already submitted' });
+    const duplicateIds = courseIds.filter(id => existingCourseIds.includes(id));
+    if (duplicateIds.length > 0) {
+      return res.status(400).json({
+        message: 'Some courses are already submitted',
+        duplicates: duplicateIds
+      });
     }
 
-    const toAdd = newCourses.map(id => ({
+    // Add only new courses
+    const toAdd = courseIds.map(id => ({
       course: id,
       status: 'pending',
       createdAt: new Date()
@@ -656,6 +657,7 @@ const submitCourses = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 const getSubmittedCourses = async (req, res) => {
   try {
