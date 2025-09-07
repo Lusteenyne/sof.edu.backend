@@ -661,35 +661,6 @@ const submitResults = async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
 
-    // Profile completion check
-    const requiredFields = [
-      'title',
-      'firstName',
-      'lastName',
-      'phoneNumber',
-      'age',
-      'gender',
-      'department',
-      'nationality',
-      'stateOfOrigin',
-      'dateOfBirth',
-      'address',
-      'maritalStatus',
-    ];
-
-    const missingFields = requiredFields.filter(
-      (field) =>
-        teacher[field] === null ||
-        teacher[field] === undefined ||
-        teacher[field].toString().trim() === ''
-    );
-
-    if (missingFields.length > 0) {
-      return res.status(403).json({
-        message: 'Complete your profile before accessing this feature',
-        missingFields,
-      });
-    }
 
 
     // Fetch course to get code
@@ -800,34 +771,7 @@ const getSubmittedResults = async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
 
-    // Profile completion check
-    const requiredFields = [
-      'title',
-      'firstName',
-      'lastName',
-      'phoneNumber',
-      'age',
-      'gender',
-      'department',
-      'nationality',
-      'stateOfOrigin',
-      'dateOfBirth',
-      'address',
-      'maritalStatus',
-    ];
-    const missingFields = requiredFields.filter(
-      (field) =>
-        teacher[field] === null ||
-        teacher[field] === undefined ||
-        teacher[field].toString().trim() === ''
-    );
-    if (missingFields.length > 0) {
-      return res.status(403).json({
-        message: 'Complete your profile before accessing this feature',
-        missingFields,
-      });
-    }
-
+   
     // Fetch submitted results
     const results = await Result.find({ course: courseId, teacher: teacherId })
       .populate('student', 'firstname lastname studentId level department')
@@ -854,36 +798,7 @@ const getStudentsByCourse = async (req, res) => {
     if (!teacher) {
       return res.status(404).json({ message: 'Teacher not found' });
     }
-       // Profile completion check
-    const requiredFields = [
-      'title',
-      'firstName',
-      'lastName',
-      'phoneNumber',
-      'age',
-      'gender',
-      'department',
-      'nationality',
-      'stateOfOrigin',
-      'dateOfBirth',
-      'address',
-      'maritalStatus',
-    ];
-
-    const missingFields = requiredFields.filter(
-      (field) =>
-        teacher[field] === null ||
-        teacher[field] === undefined ||
-        teacher[field].toString().trim() === ''
-    );
-
-    if (missingFields.length > 0) {
-      return res.status(403).json({
-        message: 'Complete your profile before accessing this feature',
-        missingFields,
-      });
-    }
-
+   
 
     const isAssigned = teacher.assignedCourses.some(
       (ac) => ac.course.toString() === courseId
